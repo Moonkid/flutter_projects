@@ -104,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ..removeCurrentSnackBar()
           ..showSnackBar(
             SnackBar(
-              content: Text('Deleted \"$todo\"'),
+              content: Text('Deleted \"${todo.text}\"'),
               action: SnackBarAction(
                   label: 'UNDO',
                   onPressed: () => setState(
