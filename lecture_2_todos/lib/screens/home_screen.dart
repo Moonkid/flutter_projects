@@ -17,7 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _todos.addAll(
         [
           const Todo(text: 'Press "+" to add a note.'),
-          const Todo(text: 'Swipe to the left delete note'),
+          const Todo(text: 'Swipe to the left to delete note'),
           const Todo(text: 'Swipe to the right to mark note as finished'),
         ]
     );
