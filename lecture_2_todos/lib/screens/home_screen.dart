@@ -14,6 +14,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _todos.addAll(
+        [
+          const Todo(text: 'Press "+" to add a note.'),
+          const Todo(text: 'Swipe to the left delete note'),
+          const Todo(text: 'Swipe to the right to mark note as finished'),
+        ]
+    );
+
     _textController.addListener(_onTextChanged);
   }
 
@@ -32,9 +40,21 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       body: Column(
-        children: <Widget>[_listView(), _buildDivider(), _bottomActionBar()],
+        children: <Widget>[
+          _listViewOrHint(),
+          _buildDivider(),
+          _bottomActionBar()
+        ],
       ),
     );
+  }
+
+  Widget _listViewOrHint() {
+    return _todos.isEmpty
+        ? const Expanded(
+            child: Center(child: Text('Press "+" to add your first note.')),
+          )
+        : _listView();
   }
 
   Widget _listView() {
@@ -141,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _bottomActionBar() {
     void addNewItem() {
       setState(() {
-        final todo = Todo(text: _textController.text, isFinished: false);
+        final todo = Todo(text: _textController.text);
         _todos.add(todo);
         _textController.clear();
       });
@@ -172,7 +192,6 @@ class _HomeScreenState extends State<HomeScreen> {
           scrollDirection: Axis.vertical,
           reverse: true,
           child: TextField(
-            autofocus: true,
             keyboardType: TextInputType.multiline,
             maxLines: null,
             decoration: const InputDecoration.collapsed(

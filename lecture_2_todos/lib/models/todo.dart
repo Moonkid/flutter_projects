@@ -3,7 +3,7 @@ import 'package:meta/meta.dart';
 class Todo {
   const Todo({
     @required this.text,
-    @required this.isFinished,
+    this.isFinished = false,
   });
 
   final String text;
