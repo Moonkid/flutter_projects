@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lecture_2_todos/models/todo.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -6,72 +7,181 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   final _textController = TextEditingController();
-  final List<String> _todos = <String>[];
+  final List<Todo> _todos = <Todo>[];
+
+  @override
+  void initState() {
+    super.initState();
+    _todos.addAll(
+        [
+          const Todo(text: 'Press "+" to add a note.'),
+          const Todo(text: 'Swipe to the left to delete note'),
+          const Todo(text: 'Swipe to the right to mark note as finished'),
+        ]
+    );
+
+    _textController.addListener(_onTextChanged);
+  }
+
+  void _onTextChanged() {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
-        title: const Text('Flutter ToDoS'),
+        title: const Text(
+          '//TODO:',
+          style: TextStyle(color: Colors.lightGreen),
+        ),
       ),
       body: Column(
         children: <Widget>[
-          Expanded(child: _listView()),
-          const Divider(
-            height: 1,
-            color: Colors.white54,
-          ),
+          _listViewOrHint(),
+          _buildDivider(),
           _bottomActionBar()
         ],
       ),
     );
   }
 
-  Widget _listView() {
-    return ListView.builder(
-        itemCount: _todos.length,
-        itemBuilder: (context, i) {
-          return _buildTile(i);
-        });
+  Widget _listViewOrHint() {
+    return _todos.isEmpty
+        ? const Expanded(
+            child: Center(child: Text('Press "+" to add your first note.')),
+          )
+        : _listView();
   }
 
-  Widget _buildTile(int i) {
-    return Stack(
-      alignment: AlignmentDirectional.bottomCenter,
-      children: <Widget>[
-        ListTile(
-          title: Text(_todos[i]),
-        ),
-        const Divider(
-          height: 1,
-          color: Colors.white54,
-        )
-      ],
+  Widget _listView() {
+    return Expanded(
+      child: ListView.builder(
+          itemCount: _todos.length,
+          itemBuilder: (context, i) {
+            return _buildDismissibleTile(index: i);
+          }),
     );
   }
 
-  Widget _bottomActionBar() => Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+  Dismissible _buildDismissibleTile({int index}) {
+    final todo = _todos[index];
+    Widget _primaryBackground() {
+      return Container(
+        alignment: Alignment.centerLeft,
+        color: Colors.green,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: Icon(Icons.check),
+        ),
+      );
+    }
+
+    Widget _secondaryBackground() {
+      return Container(
+        alignment: Alignment.centerRight,
+        color: Colors.red,
+        child: Padding(
+          padding: const EdgeInsets.only(right: 16.0),
+          child: Icon(Icons.delete_outline),
+        ),
+      );
+    }
+
+    Widget _todoTile(Todo todo) {
+      return Stack(
+        alignment: AlignmentDirectional.bottomCenter,
         children: <Widget>[
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              child: _buildExpandableTextField(),
+          ListTile(
+            title: Text(
+              todo.text,
+              style: todo.isFinished
+                  ? TextStyle(decoration: TextDecoration.lineThrough)
+                  : null,
             ),
           ),
-          FlatButton(
-            child: const Text('Add'),
-            onPressed: addNewItem,
-          )
+          _buildDivider()
         ],
       );
+    }
 
-  void addNewItem() {
-    setState(() {
-      _todos.add(_textController.text);
-      _textController.clear();
-    });
+    Future<bool> _confirmAction(DismissDirection direction) {
+      if (direction == DismissDirection.startToEnd) {
+        setState(() {
+          _markFinished(todo, index);
+        });
+      }
+      return Future.value(direction == DismissDirection.endToStart);
+    }
+
+    void _onDismissed(DismissDirection direction) {
+      setState(() {
+        _todos.removeAt(index);
+        _scaffoldKey.currentState
+          ..removeCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text('Deleted \"${todo.text}\"'),
+              action: SnackBarAction(
+                  label: 'UNDO',
+                  onPressed: () => setState(
+                        () => _todos.insert(index, todo),
+                      ) // this is what you needed
+                  ),
+            ),
+          );
+      });
+    }
+
+    return Dismissible(
+      background: _primaryBackground(),
+      secondaryBackground: _secondaryBackground(),
+      confirmDismiss: _confirmAction,
+      onDismissed: _onDismissed,
+      key: Key(UniqueKey().toString()),
+      child: _todoTile(todo),
+    );
+  }
+
+  void _markFinished(Todo todo, int index) {
+    _todos.removeAt(index);
+    _todos.insert(index, todo.copyWith(isFinished: !todo.isFinished));
+  }
+
+  Divider _buildDivider() {
+    return const Divider(
+      height: 1,
+      color: Colors.white54,
+    );
+  }
+
+  Widget _bottomActionBar() {
+    void addNewItem() {
+      setState(() {
+        final todo = Todo(text: _textController.text);
+        _todos.add(todo);
+        _textController.clear();
+      });
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: <Widget>[
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            child: _buildExpandableTextField(),
+          ),
+        ),
+        IconButton(
+          icon: Icon(Icons.add),
+          onPressed: _textController.text.isNotEmpty ? addNewItem : null,
+        )
+      ],
+    );
   }
 
   Widget _buildExpandableTextField() {
@@ -85,12 +195,20 @@ class _HomeScreenState extends State<HomeScreen> {
             keyboardType: TextInputType.multiline,
             maxLines: null,
             decoration: const InputDecoration.collapsed(
-                hintText: 'New note',
+                hintText: 'Take a note...',
                 hintStyle: TextStyle(color: Colors.white54)),
             controller: _textController,
           ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is removed from the
+    // widget tree.
+    _textController.dispose();
+    super.dispose();
   }
 }
