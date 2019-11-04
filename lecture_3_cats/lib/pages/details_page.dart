@@ -4,9 +4,13 @@ import 'package:lecture_3_cats/widgets/local_remote_image.dart';
 class DetailsPage extends StatelessWidget {
   const DetailsPage({
     @required String imageUrl,
-  }) : _imageUrl = imageUrl;
+    @required int index,
+  })
+      : _imageUrl = imageUrl,
+        _index = index;
 
   final String _imageUrl;
+  final int _index;
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +22,7 @@ class DetailsPage extends StatelessWidget {
         ),
       ),
       body: Center(
-        child: LocalOrRemoteHeroImage(url: _imageUrl),
+        child: LocalOrRemoteHeroImage(index: _index, url: _imageUrl),
       ),
     );
   }

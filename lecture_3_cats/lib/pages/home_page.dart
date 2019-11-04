@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:lecture_3_cats/pages/details_page.dart';
-import 'package:lecture_3_cats/widgets/local_remote_image.dart';
+import 'package:lecture_3_cats/widgets/cat_item.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -47,27 +46,8 @@ class _HomePageState extends State<HomePage> {
 
   Widget _builder(BuildContext context, int index) {
     final imageUrl = _images[index];
-    void _showDetails() {
-      Navigator.push<void>(
-          context,
-          MaterialPageRoute(
-              builder: (context) => DetailsPage(imageUrl: imageUrl)));
-    }
 
-    return Stack(
-      children: <Widget>[
-        Positioned.fill(
-          child: Card(
-            child: LocalOrRemoteHeroImage(url: imageUrl),
-          ),
-        ),
-        Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: _showDetails,
-            ))
-      ],
-    );
+    return CatItem(index: index, imageUrl: imageUrl);
   }
 
   void _addNewItemAction() {
