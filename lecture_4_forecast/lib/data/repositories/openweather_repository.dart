@@ -45,5 +45,7 @@ class OpenWeatherRepository extends WeatherRepository {
         })
         .toSet()
         .toList();
+    //Equality for forecast model is defined by only 'displayDate'
+    //so casting to set will remove hourly forecast from array
   }
 }
