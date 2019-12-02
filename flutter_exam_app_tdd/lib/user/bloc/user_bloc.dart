@@ -26,18 +26,9 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       yield const Loading();
       final Either<Failure, User> result = await _usecase();
       final state = result.fold(
-              (failure) => Error(message: _mapFailureToMessage(failure)),
-              (user) => Loaded(user: user));
+          (failure) => Error(message: strings.mapFailureToMessage(failure)),
+          (user) => Loaded(user: user));
       yield state;
-    }
-  }
-
-  String _mapFailureToMessage(Failure failure) {
-    switch (failure.runtimeType) {
-      case ServerFailure:
-        return strings.serverFailureMessage;
-      default:
-        return 'Unexpected Error';
     }
   }
 }
